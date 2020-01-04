@@ -1,0 +1,49 @@
+version: 2
+jobs:
+    test:
+      machine: true
+      steps:
+        - checkout
+        - run: docker run --rm -i hadolint/hadolint < Dockerfile.tmpl
+        - run: docker run -it --rm -v "$PWD":/mnt koalaman/shellcheck:stable *.sh
+    build:
+      machine: true
+      steps:
+        - checkout
+        - run: |
+               ./build-with-driver.sh
+    build_and_publish:
+      machine: true
+      steps:
+        - checkout
+        - run: |
+               docker login -u $DOCKER_USER -p $DOCKER_PASS
+               PUSH=1 TAG_LATEST=1 ./build-with-driver.sh
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - test
+      - build:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore:
+                - master
+      - build_and_publish:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+  nightly:
+    triggers:
+      - schedule:
+          cron: '0 0 * * *'
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build_and_publish
