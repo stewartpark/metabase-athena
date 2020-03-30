@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-METABASE_VERSION=$(curl -sSL https://hub.docker.com/v2/repositories/metabase/metabase/tags | jq '.results[].name' | grep -v latest | head -n1 | tr -d \")
+METABASE_VERSION=${METABASE_VERSION:-$(curl -sSL https://hub.docker.com/v2/repositories/metabase/metabase/tags | jq '.results[].name' | grep -v latest | head -n1 | tr -d \")}
 
 echo "Metabase Version: $METABASE_VERSION"
 
